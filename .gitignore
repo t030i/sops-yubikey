@@ -1,0 +1,44 @@
+# SOPS Secret Management .gitignore
+
+# CRITICAL: Never commit the master key!
+master-key.txt
+ci-key.txt
+*-key.txt
+
+# Never commit identity files (usually in ~/ but just in case)
+.sops-age-keys.txt
+*-yubikey-identity.txt
+
+# Never commit unencrypted secrets
+secrets.yaml
+secrets.json
+secrets.env
+config.yaml
+config.json
+.env
+.env.*
+!.env.example
+
+# Test files
+test-secrets.yaml
+test-secrets.enc.yaml
+test*.yaml
+test*.enc.yaml
+
+# Encrypted files are SAFE to commit
+# (uncomment to explicitly allow)
+!*.enc.yaml
+!*.enc.json
+!*.enc.env
+!*.enc.ini
+!*.enc.txt
+
+# macOS
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

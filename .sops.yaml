@@ -1,0 +1,13 @@
+creation_rules:
+  - path_regex: .*\.(yaml|json|env|ini|txt)$
+    key_groups:
+      - age:
+          # Master key (offline backup, CI/CD)
+          # Replace with your actual master key from: age-keygen -o master-key.txt
+          - age1master_key_replace_with_yours...
+
+          # Team Yubikey PIV keys
+          # Replace with actual age1yubikey1... recipients from team members
+          - age1yubikey1_team_member_1_replace...
+          - age1yubikey1_team_member_2_replace...
+          # Add more team members as needed
