@@ -12,28 +12,49 @@ Welcome! This guide will help you get set up with SOPS secret management using Y
 
 ### 1. Install Required Tools
 
+**macOS**:
 ```bash
-# macOS
 brew install sops age age-plugin-yubikey yubico-piv-tool
 
-# Linux (Ubuntu/Debian)
+# Verify
+sops --version && age --version && age-plugin-yubikey --version
+```
+
+**Linux (Ubuntu/Debian)**:
+```bash
 # Install SOPS
 wget https://github.com/mozilla/sops/releases/download/v3.8.1/sops_3.8.1_amd64.deb
 sudo dpkg -i sops_3.8.1_amd64.deb
 
-# Install age
-sudo apt install age
+# Install age and Yubikey tools
+sudo apt install age yubikey-manager yubico-piv-tool
 
-# Install age-plugin-yubikey (may need to build from source)
+# Install Rust (for age-plugin-yubikey)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+
+# Install age-plugin-yubikey
 cargo install age-plugin-yubikey
 
-# Install Yubikey tools
-sudo apt install yubikey-manager yubico-piv-tool
+# Verify
+sops --version && age --version && age-plugin-yubikey --version
+```
 
-# Verify installations
-sops --version
-age --version
-age-plugin-yubikey --version
+**Windows (WSL2 + Ubuntu)**:
+```bash
+# Install Ubuntu from Microsoft Store, then follow Linux instructions above
+```
+
+**Windows (Native - PowerShell)**:
+```powershell
+# Install via Chocolatey
+choco install sops age
+
+# Download Yubikey Manager from: https://www.yubico.com/support/download/
+
+# Install Rust from: https://rustup.rs/
+# Then:
+cargo install age-plugin-yubikey
 ```
 
 ### 2. Change Your Yubikey PINs
@@ -86,16 +107,29 @@ cat yourname-yubikey.txt
 
 **Important**: Tell SOPS to use your Yubikey:
 
+**macOS / Linux**:
 ```bash
 # Create identity file (references your Yubikey)
 age-plugin-yubikey --identity > ~/.sops-age-keys.txt
 
-# Add to shell profile (so it loads automatically)
-echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.zshrc
-# For bash users: echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.bashrc
+# Add to shell profile (choose your shell):
+# For zsh (macOS default):
+echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.zshrc && source ~/.zshrc
 
-# Reload shell
-source ~/.zshrc  # or source ~/.bashrc
+# For bash (most Linux):
+echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.bashrc && source ~/.bashrc
+```
+
+**Windows (PowerShell)**:
+```powershell
+# Create identity file
+age-plugin-yubikey --identity | Out-File -FilePath "$env:USERPROFILE\.sops-age-keys.txt" -Encoding UTF8
+
+# Set environment variable
+[System.Environment]::SetEnvironmentVariable('SOPS_AGE_KEY_FILE', "$env:USERPROFILE\.sops-age-keys.txt", 'User')
+
+# Reload (or restart PowerShell)
+$env:SOPS_AGE_KEY_FILE = "$env:USERPROFILE\.sops-age-keys.txt"
 ```
 
 **What this does**: Creates a file that tells SOPS "use my Yubikey to decrypt." Your private key stays on the Yubikey!

@@ -14,8 +14,45 @@ Secure secret management using [SOPS](https://github.com/mozilla/sops) with Yubi
 
 ### Prerequisites
 
+**macOS** (Homebrew):
 ```bash
 brew install sops age age-plugin-yubikey yubico-piv-tool
+```
+
+**Linux** (Debian/Ubuntu):
+```bash
+# Install SOPS
+wget https://github.com/mozilla/sops/releases/download/v3.8.1/sops_3.8.1_amd64.deb
+sudo dpkg -i sops_3.8.1_amd64.deb
+
+# Install age
+sudo apt install age
+
+# Install Yubikey tools
+sudo apt install yubikey-manager yubico-piv-tool
+
+# Install age-plugin-yubikey (requires Rust)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+cargo install age-plugin-yubikey
+```
+
+**Windows** (WSL2 + Ubuntu):
+```bash
+# Enable WSL2 and install Ubuntu from Microsoft Store first
+# Then follow Linux instructions above
+```
+
+**Windows** (Native - PowerShell):
+```powershell
+# Install via Chocolatey
+choco install sops age
+
+# Download and install Yubikey tools from:
+# https://www.yubico.com/support/download/yubikey-manager/
+
+# Install age-plugin-yubikey (requires Rust)
+# Install Rust from: https://rustup.rs/
+cargo install age-plugin-yubikey
 ```
 
 ### Setup (5 minutes)
@@ -37,8 +74,16 @@ age-plugin-yubikey --generate \
 
 # 4. Create identity file for SOPS
 age-plugin-yubikey --identity > ~/.sops-age-keys.txt
-echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.zshrc
-source ~/.zshrc
+
+# Add to shell profile (choose your shell):
+# For zsh (macOS default):
+echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.zshrc && source ~/.zshrc
+
+# For bash (Linux default):
+echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.bashrc && source ~/.bashrc
+
+# For Windows PowerShell (add to $PROFILE):
+# [System.Environment]::SetEnvironmentVariable('SOPS_AGE_KEY_FILE', "$env:USERPROFILE\.sops-age-keys.txt", 'User')
 
 # 5. Configure SOPS (see .sops.yaml example in repo)
 
@@ -158,11 +203,19 @@ creation_rules:
 
 ## Requirements
 
-- **Yubikey 5** or newer (with PIV support)
-- **macOS, Linux, or WSL** on Windows
-- **SOPS 3.8+**
-- **age 1.1+**
-- **age-plugin-yubikey 0.5+**
+**Hardware**:
+- Yubikey 5 or newer (with PIV support)
+
+**Operating Systems**:
+- macOS 10.15+ (Catalina or newer)
+- Linux (Ubuntu 20.04+, Debian 11+, Fedora, Arch, etc.)
+- Windows 10/11 (via WSL2 with Ubuntu, or native)
+
+**Software**:
+- SOPS 3.8+
+- age 1.1+
+- age-plugin-yubikey 0.5+
+- yubico-piv-tool / yubikey-manager
 
 ## Troubleshooting
 

@@ -28,8 +28,10 @@ This setup provides maximum security by:
 
 ## Prerequisites
 
+### macOS
+
 ```bash
-# Install required tools
+# Install via Homebrew
 brew install sops age age-plugin-yubikey yubico-piv-tool
 
 # Verify installations
@@ -40,6 +42,81 @@ yubico-piv-tool --version
 
 # Verify Yubikey is detected
 yubico-piv-tool -a status
+```
+
+### Linux (Debian/Ubuntu)
+
+```bash
+# Install SOPS
+wget https://github.com/mozilla/sops/releases/download/v3.8.1/sops_3.8.1_amd64.deb
+sudo dpkg -i sops_3.8.1_amd64.deb
+
+# Install age
+sudo apt install age
+
+# Install Yubikey tools
+sudo apt install yubikey-manager yubico-piv-tool
+
+# Install Rust (required for age-plugin-yubikey)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+
+# Install age-plugin-yubikey
+cargo install age-plugin-yubikey
+
+# Verify installations
+sops --version
+age --version
+age-plugin-yubikey --version
+ykman --version
+
+# Verify Yubikey is detected
+ykman info
+```
+
+### Linux (Fedora/RHEL)
+
+```bash
+# Install SOPS
+sudo dnf install sops
+
+# Install age
+sudo dnf install age
+
+# Install Yubikey tools
+sudo dnf install yubikey-manager yubico-piv-tool
+
+# Install Rust and age-plugin-yubikey
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+cargo install age-plugin-yubikey
+```
+
+### Windows (WSL2 + Ubuntu)
+
+```bash
+# First, enable WSL2 and install Ubuntu from Microsoft Store
+# Then follow Linux (Debian/Ubuntu) instructions above
+```
+
+### Windows (Native - PowerShell)
+
+```powershell
+# Install Chocolatey (if not installed)
+# Visit: https://chocolatey.org/install
+
+# Install via Chocolatey
+choco install sops age
+
+# Download and install Yubikey Manager from:
+# https://www.yubico.com/support/download/yubikey-manager/
+
+# Install Rust from: https://rustup.rs/
+# Then install age-plugin-yubikey:
+cargo install age-plugin-yubikey
+
+# Verify Yubikey is detected
+ykman info
 ```
 
 ## Step 1: Generate Master Key
@@ -152,16 +229,47 @@ cat your-name-yubikey.txt
 
 **Critical**: SOPS needs an identity file to know to use your Yubikey:
 
+### macOS / Linux
+
 ```bash
 # Create identity file that references your Yubikey
 age-plugin-yubikey --identity > ~/.sops-age-keys.txt
 
-# Add to shell profile for automatic loading
-echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.zshrc
-# Or for bash: echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.bashrc
+# Add to shell profile (choose your shell):
 
-# Reload shell
-source ~/.zshrc  # or source ~/.bashrc
+# For zsh (macOS default, some Linux):
+echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.zshrc
+source ~/.zshrc
+
+# For bash (most Linux, older macOS):
+echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.bashrc
+source ~/.bashrc
+
+# For fish shell:
+echo 'set -gx SOPS_AGE_KEY_FILE ~/.sops-age-keys.txt' >> ~/.config/fish/config.fish
+source ~/.config/fish/config.fish
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Create identity file
+age-plugin-yubikey --identity | Out-File -FilePath "$env:USERPROFILE\.sops-age-keys.txt" -Encoding UTF8
+
+# Set environment variable permanently
+[System.Environment]::SetEnvironmentVariable('SOPS_AGE_KEY_FILE', "$env:USERPROFILE\.sops-age-keys.txt", 'User')
+
+# Reload environment (or restart PowerShell)
+$env:SOPS_AGE_KEY_FILE = "$env:USERPROFILE\.sops-age-keys.txt"
+```
+
+### Windows (WSL2)
+
+```bash
+# Same as Linux instructions above
+age-plugin-yubikey --identity > ~/.sops-age-keys.txt
+echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 **What this does**:
